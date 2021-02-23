@@ -75,9 +75,11 @@ getSubRows returns the sub rows (contiguous) of length 'win' from one row:
 >               | otherwise = (take win rs) : getSubRows (drop 1 rs)
 
 returns a diagonal line down and right in the matrix from an index of the top row
+not finished
 
 > getDiag :: Int -> Board -> Row
 > getDiag _ [] = []
-> getDiag n (r:rs) = (r !! n) : (getDiag (n+1) rs)
+> getDiag n (r:rs) | n < length r = (r !! n) : (getDiag (n+1) rs)
+>                  | otherwise = []
 
 ----------------------------------------------------------------------
