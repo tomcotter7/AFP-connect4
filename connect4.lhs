@@ -9,13 +9,13 @@ For flexibility, we define constants for the row and column size of the
 board, length of a winning sequence, and search depth for the game tree:
 
 > rows :: Int
-> rows = 6
+> rows = 3
 >
 > cols :: Int
-> cols = 7
+> cols = 3
 >
 > win :: Int
-> win = 4
+> win = 3
 >
 > depth :: Int
 > depth = 6
@@ -46,5 +46,13 @@ The following code displays a board on the screen:
 > showPlayer O = 'O'
 > showPlayer B = '.'
 > showPlayer X = 'X'
+
+Utility Functions
+
+> turn :: Board -> Player
+> 
+
+> move :: Player -> Int -> Board -> Board
+>
 
 ----------------------------------------------------------------------
