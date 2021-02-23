@@ -17,7 +17,7 @@ board, length of a winning sequence, and search depth for the game tree:
 > cols = 7
 >
 > win :: Int
-> win = 2
+> win = 3
 >
 > depth :: Int
 > depth = 6
@@ -56,11 +56,12 @@ and false otherwise:
 > hasRow p ps = all (==p) ps
 
 hasWon returns whether a specified player has won based on the contents of the specified board:
-doesn't check for diagonals yet
 
 > hasWon :: Player -> Board -> Bool
+> hasWon _ [] = False
 > hasWon p rs = any (hasRow p) (getAllSubRows rs) ||
->               any (hasRow p) (getAllSubRows (transpose rs))
+>               any (hasRow p) (getAllSubRows (transpose rs)) ||
+>               any (hasRow p) (getAllSubRows (getAllDiags rs))
 
 getAllSubRows returns all horizontal sub rows (contiguous) of length 'win' from a board:
 
@@ -75,11 +76,28 @@ getSubRows returns the sub rows (contiguous) of length 'win' from one row:
 >               | otherwise = (take win rs) : getSubRows (drop 1 rs)
 
 returns a diagonal line down and right in the matrix from an index of the top row
-not finished
 
 > getDiag :: Int -> Board -> Row
 > getDiag _ [] = []
 > getDiag n (r:rs) | n < length r = (r !! n) : (getDiag (n+1) rs)
 >                  | otherwise = []
+
+getColDiags returns a list of diagonals stemming down and right from each point on the top row
+
+> getColDiags :: Int -> Board -> [Row]
+> getColDiags _ [] = []
+> getColDiags n rs | n < length (head rs) = getDiag n rs : (getColDiags (n+1) rs)
+>                  | otherwise = []
+
+getAllDiags returns all diagonals on the board as a list of rows with no duplicates
+
+> getAllDiags :: Board -> [Row]
+> getAllDiags rs = d ++ t ++ r ++ tr
+>                  where
+>                      d = getColDiags 0 rs
+>                      t = getColDiags 1 (transpose rs)
+>                      r = getColDiags 0 reverseboard
+>                      tr = getColDiags 1 (transpose reverseboard)
+>                      reverseboard = reverse rs
 
 ----------------------------------------------------------------------
