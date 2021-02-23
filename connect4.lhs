@@ -17,7 +17,7 @@ board, length of a winning sequence, and search depth for the game tree:
 > cols = 7
 >
 > win :: Int
-> win = 4
+> win = 2
 >
 > depth :: Int
 > depth = 6
@@ -50,15 +50,28 @@ The following code displays a board on the screen:
 > showPlayer X = 'X'
 
 hasRow returns true if all points in a specified row are occupied by a specified player
-and false otherwise
+and false otherwise:
 
 > hasRow :: Player -> Row -> Bool
 > hasRow p ps = all (==p) ps
 
-hasWon function unfinished
+hasWon returns whether a specified player has won based on the contents of the specified board:
+doesn't check for diagonals yet
 
 > hasWon :: Player -> Board -> Bool
-> hasWon p rs = any (hasRow p) rs ||
->               any (hasRow p) (transpose rs)
+> hasWon p rs = any (hasRow p) (getAllSubRows rs) ||
+>               any (hasRow p) (getAllSubRows (transpose rs))
+
+getAllSubRows returns all horizontal sub rows (contiguous) of length 'win' from a board:
+
+> getAllSubRows :: Board -> [Row]
+> getAllSubRows [] = []
+> getAllSubRows (x:xs) = getSubRows x ++ getAllSubRows xs
+
+getSubRows returns the sub rows (contiguous) of length 'win' from one row:
+
+> getSubRows :: Row -> [Row]
+> getSubRows rs | length rs < win = []
+>               | otherwise = (take win rs) : getSubRows (drop 1 rs)
 
 ----------------------------------------------------------------------
