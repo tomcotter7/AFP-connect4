@@ -5,6 +5,8 @@ Your full email address(es) - psytc8@nottingham.ac.uk, psyrg4@nottingham.ac.uk
 
 ----------------------------------------------------------------------
 
+> import Data.List
+
 For flexibility, we define constants for the row and column size of the
 board, length of a winning sequence, and search depth for the game tree:
 
@@ -52,5 +54,11 @@ and false otherwise
 
 > hasRow :: Player -> Row -> Bool
 > hasRow p ps = all (==p) ps
+
+hasWon function unfinished
+
+> hasWon :: Player -> Board -> Bool
+> hasWon p rs = any (hasRow p) rs ||
+>               any (hasRow p) (transpose rs)
 
 ----------------------------------------------------------------------
