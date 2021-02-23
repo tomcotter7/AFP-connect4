@@ -47,4 +47,10 @@ The following code displays a board on the screen:
 > showPlayer B = '.'
 > showPlayer X = 'X'
 
+hasRow returns true if all points in a specified row are occupied by a specified player
+and false otherwise
+
+> hasRow :: Player -> Row -> Bool
+> hasRow p ps = all (==p) ps
+
 ----------------------------------------------------------------------
