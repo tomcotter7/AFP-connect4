@@ -12,13 +12,13 @@ For flexibility, we define constants for the row and column size of the
 board, length of a winning sequence, and search depth for the game tree:
 
 > rows :: Int
-> rows = 3
+> rows = 6
 >
 > cols :: Int
-> cols = 3
+> cols = 7
 >
 > win :: Int
-> win = 3
+> win = 4
 >
 > depth :: Int
 > depth = 6
@@ -27,7 +27,7 @@ board, length of a winning sequence, and search depth for the game tree:
 > first = O
 
 > blank :: Board
-> blank = [[B,B,B],[B,B,B],[B,B,B]]
+> blank = replicate rows (replicate cols B)
 
 The board itself is represented as a list of rows, where each row is
 a list of player values, subject to the above row and column sizes:
