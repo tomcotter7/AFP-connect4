@@ -56,6 +56,8 @@ The following code displays a board on the screen:
 > showPlayer B = '.'
 > showPlayer X = 'X'
 
+Below is the main game loop code, Player O starts and input is read and a move is made.
+
 > main :: IO ()
 > main = do 
 >           putStrLn "Player O goes first"
@@ -65,8 +67,13 @@ The following code displays a board on the screen:
 > run :: Board -> Player -> IO ()
 > run bs p = do
 >           showBoard bs
->           c <- getCol
->           run (move p c bs) (next p)
+>           run' bs p
+
+> run' :: Board -> Player -> IO ()
+> run' bs p | hasWon (next p) bs = printWinner (next p)
+>           | otherwise =
+>                do c <- getCol
+>                   run (move p c bs) (next p)
 
 getCol returns an Integer based on the user input
 
@@ -84,6 +91,9 @@ getCol returns an Integer based on the user input
 >            else
 >               do putStrLn "Invalid"
 >                  getCol
+
+> printWinner :: Player -> IO ()
+> printWinner p = putStr ("Player " ++ show p ++ " won!\n")
 
 Utility Functions
 
