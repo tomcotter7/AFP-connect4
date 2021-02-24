@@ -6,6 +6,7 @@ Your full email address(es) - psytc8@nottingham.ac.uk, psyrg4@nottingham.ac.uk
 ----------------------------------------------------------------------
 
 > import Data.List
+> import Data.Char
 
 For flexibility, we define constants for the row and column size of the
 board, length of a winning sequence, and search depth for the game tree:
@@ -24,6 +25,9 @@ board, length of a winning sequence, and search depth for the game tree:
 
 > first :: Player
 > first = O
+
+> blank :: Board
+> blank = [[B,B,B],[B,B,B],[B,B,B]]
 
 The board itself is represented as a list of rows, where each row is
 a list of player values, subject to the above row and column sizes:
@@ -45,21 +49,51 @@ The following code displays a board on the screen:
 >               where
 >                  showRow = map showPlayer
 >                  line    = replicate cols '-'
->                  nums    = take cols ['0'..]
+>                  nums    = take cols ['1'..]
 >
 > showPlayer :: Player -> Char
 > showPlayer O = 'O'
 > showPlayer B = '.'
 > showPlayer X = 'X'
 
+> main :: IO ()
+> main = do 
+>           putStrLn "Player O goes first"
+>           run blank first
+
+
+> run :: Board -> Player -> IO ()
+> run bs p = do
+>           showBoard bs
+>           c <- getCol
+>           run (move p c bs) (next p)
+
+getCol returns an Integer based on the user input
+
+> getCol :: IO Int
+> getCol = do
+>            xs <- getLine
+>            if xs /= [] && all isDigit xs then
+>               do
+>                   let c = read xs
+>                   if c <= cols then
+>                       return c
+>                   else
+>                       do putStrLn "Invalid"
+>                          getCol
+>            else
+>               do putStrLn "Invalid"
+>                  getCol
+
 Utility Functions
 
-turn returns which players turn it is
-
-> blank :: Board
-> blank = [[B,B,B],[B,B,B],[B,B,B]]
-
 Turn returns which players turn it is. Will return O if the game hasn't started as O goes first.
+
+> next :: Player -> Player
+> next O = X
+> next X = O
+> next B = B
+
 
 > turn :: Board -> Player
 > turn xs | o <= x = O
