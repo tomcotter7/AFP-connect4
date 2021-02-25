@@ -132,6 +132,8 @@ makeMove makes the moves on the reversed board and returns the updated reversed 
 >                           (x,y:ys) = splitAt (col - 1) b
 
 
+-- isDraw :: Board -> Bool
+-- isDraw bs = all (==False) (map (any B) bs)
 
 
 hasRow returns true if all points in a specified row are occupied by a specified player
