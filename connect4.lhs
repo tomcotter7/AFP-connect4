@@ -207,4 +207,7 @@ gametree :: Grid -> Player -> Tree Board
 minimax :: Tree Board -> Tree (Board,Player)
 
 bestmove :: Board -> Player -> Board
+
+cut :: Int -> Tree a -> Tree a
+
 ----------------------------------------------------------------------
