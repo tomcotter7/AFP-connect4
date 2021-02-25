@@ -12,13 +12,13 @@ For flexibility, we define constants for the row and column size of the
 board, length of a winning sequence, and search depth for the game tree:
 
 > rows :: Int
-> rows = 6
+> rows = 3
 >
 > cols :: Int
-> cols = 7
+> cols = 3
 >
 > win :: Int
-> win = 4
+> win = 3
 >
 > depth :: Int
 > depth = 6
@@ -28,6 +28,9 @@ board, length of a winning sequence, and search depth for the game tree:
 
 > blank :: Board
 > blank = replicate rows (replicate cols B)
+
+> full :: Board
+> full = replicate rows (replicate cols X)
 
 The board itself is represented as a list of rows, where each row is
 a list of player values, subject to the above row and column sizes:
@@ -71,26 +74,27 @@ Below is the main game loop code, Player O starts and input is read and a move i
 
 > run' :: Board -> Player -> IO ()
 > run' bs p | hasWon (next p) bs = printWinner (next p)
+>           | isDraw bs = putStrLn "Draw!"
 >           | otherwise =
->                do c <- getCol
+>                do c <- getCol bs
 >                   run (move p c bs) (next p)
 
 getCol returns an Integer based on the user input
 
-> getCol :: IO Int
-> getCol = do
+> getCol :: Board -> IO Int
+> getCol bs = do
 >            xs <- getLine
 >            if xs /= [] && all isDigit xs then
 >               do
 >                   let c = read xs
->                   if c <= cols then
+>                   if valid c bs then
 >                       return c
 >                   else
 >                       do putStrLn "Invalid"
->                          getCol
+>                          getCol bs
 >            else
 >               do putStrLn "Invalid"
->                  getCol
+>                  getCol bs
 
 > printWinner :: Player -> IO ()
 > printWinner p = putStr ("Player " ++ show p ++ " won!\n")
@@ -132,9 +136,17 @@ makeMove makes the moves on the reversed board and returns the updated reversed 
 >                           (x,y:ys) = splitAt (col - 1) b
 
 
--- isDraw :: Board -> Bool
--- isDraw bs = all (==False) (map (any B) bs)
+returns true is there is no possible moves left on the board.
 
+> isDraw :: Board -> Bool
+> isDraw bs = all (==True) (map (all (/=B)) bs)
+
+returns true if the move is valid.
+
+> valid :: Int -> Board -> Bool
+> valid c (b:bs) = c <= cols && y == B
+>                  where
+>                   (_,y:ys) = splitAt (c - 1) b
 
 hasRow returns true if all points in a specified row are occupied by a specified player
 and false otherwise:
@@ -187,7 +199,8 @@ getAllDiags returns all diagonals on the board as a list of rows with no duplica
 >                      tr = getColDiags 1 (transpose reverseboard)
 >                      reverseboard = reverse rs
 
-moves :: Board -> Player -> [Board]
+> moves :: Board -> Player -> [Board]
+> moves bs p = [ move p c bs | c <- [1..cols], valid c bs]
 
 gametree :: Grid -> Player -> Tree Board
 
