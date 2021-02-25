@@ -187,4 +187,11 @@ getAllDiags returns all diagonals on the board as a list of rows with no duplica
 >                      tr = getColDiags 1 (transpose reverseboard)
 >                      reverseboard = reverse rs
 
+moves :: Board -> Player -> [Board]
+
+gametree :: Grid -> Player -> Tree Board
+
+minimax :: Tree Board -> Tree (Board,Player)
+
+bestmove :: Board -> Player -> Board
 ----------------------------------------------------------------------
