@@ -45,6 +45,9 @@ a blank representing a position on the board that is not yet occupied:
 > data Player = O | B | X
 >               deriving (Ord, Eq, Show)
 
+> data Tree a = Node a [Tree a]
+>               deriving (Show)
+
 The following code displays a board on the screen:
 
 > showBoard :: Board -> IO ()
@@ -99,15 +102,14 @@ getCol returns an Integer based on the user input
 > printWinner :: Player -> IO ()
 > printWinner p = putStr ("Player " ++ show p ++ " won!\n")
 
-Utility Functions
-
-Turn returns which players turn it is. Will return O if the game hasn't started as O goes first.
+next is passed a player and returns the opposite player
 
 > next :: Player -> Player
 > next O = X
 > next X = O
 > next B = B
 
+-- I don't know if we need the turn function but I'm going to leave it in for now
 
 > turn :: Board -> Player
 > turn xs | o <= x = O
@@ -202,7 +204,9 @@ getAllDiags returns all diagonals on the board as a list of rows with no duplica
 > moves :: Board -> Player -> [Board]
 > moves bs p = [ move p c bs | c <- [1..cols], valid c bs]
 
-gametree :: Grid -> Player -> Tree Board
+> gametree :: Int -> Board -> Player -> Tree Board
+> gametree 0 bs p = Node bs []
+> gametree d bs p = Node bs [gametree (d-1) b (next p) | b <- moves bs p]
 
 minimax :: Tree Board -> Tree (Board,Player)
 
