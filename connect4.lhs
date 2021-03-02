@@ -12,13 +12,13 @@ For flexibility, we define constants for the row and column size of the
 board, length of a winning sequence, and search depth for the game tree:
 
 > rows :: Int
-> rows = 3
+> rows = 6
 >
 > cols :: Int
-> cols = 3
+> cols = 7
 >
 > win :: Int
-> win = 3
+> win = 4
 >
 > depth :: Int
 > depth = 6
@@ -67,7 +67,7 @@ Below is the main game loop code, Player O starts and input is read and a move i
 > main :: IO ()
 > main = do 
 >           putStrLn "Player O goes first"
->           run blank first
+>           pvc blank first
 
 
 > run :: Board -> Player -> IO ()
@@ -81,6 +81,20 @@ Below is the main game loop code, Player O starts and input is read and a move i
 >           | otherwise =
 >                do c <- getCol bs
 >                   run (move p c bs) (next p)
+
+> pvc :: Board -> Player -> IO ()
+> pvc b p = do showBoard b 
+>              c <- getCol b
+>              let b' = move p c b              
+>              showBoard b'
+>              if hasWon p b' then
+>                  printWinner p
+>              else
+>                  do let b'' = bestmove b' (next p)
+>                     if hasWon (next p) b'' then
+>                         printWinner (next p)
+>                     else
+>                         pvc b'' p
 
 getCol returns an Integer based on the user input
 
@@ -208,10 +222,38 @@ getAllDiags returns all diagonals on the board as a list of rows with no duplica
 > gametree 0 bs p = Node bs []
 > gametree d bs p = Node bs [gametree (d-1) b (next p) | b <- moves bs p]
 
-minimax :: Tree Board -> Tree (Board,Player)
+minimax attaches an evaluation to each board in the tree
+based on whether the board at each leaf has been won by X or O or if it is a draw/incomplete game
+the evaluations then propagate their way up the tree to the current board
 
-bestmove :: Board -> Player -> Board
+> minimax :: Player -> Tree Board -> Tree (Board,Player)
+> minimax p (Node b []) = Node (b,evalboard b) []
+> minimax p (Node b st) | thiseval == B = Node (b, pref evals) st'
+>                       | otherwise = Node (b, thiseval) []                        
+>                         where
+>                             st'   = map (minimax (next p)) st
+>                             evals = [e | Node (_,e) _ <- st']
+>                             pref  = if p==X then maximum else minimum
+>                             thiseval = evalboard b
 
-cut :: Int -> Tree a -> Tree a
+evalboard returns the status of a board:
+- X has won = X
+- O has won = O
+- game not over yet = B
+- game is a draw = B
+
+> evalboard :: Board -> Player
+> evalboard b | hasWon X b = X 
+>             | hasWon O b = O
+>             | otherwise = B
+
+bestmove returns the optimal move a player can make 
+in a given position based on a gametree with evaluations
+
+> bestmove :: Board -> Player -> Board
+> bestmove b p = head [b' | Node (b',p') _ <- st, p' == eval]
+>                where
+>                   t  = gametree depth b p
+>                   Node (_,eval) st = minimax p t
 
 ----------------------------------------------------------------------
