@@ -7,6 +7,7 @@ Your full email address(es) - psytc8@nottingham.ac.uk, psyrg4@nottingham.ac.uk
 
 > import Data.List
 > import Data.Char
+> import System.IO.Unsafe
 
 For flexibility, we define constants for the row and column size of the
 board, length of a winning sequence, and search depth for the game tree:
