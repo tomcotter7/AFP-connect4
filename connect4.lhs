@@ -8,6 +8,7 @@ Your full email address(es) - psytc8@nottingham.ac.uk, psyrg4@nottingham.ac.uk
 > import Data.List
 > import Data.Char
 > import System.IO.Unsafe
+> import System.Random
 
 For flexibility, we define constants for the row and column size of the
 board, length of a winning sequence, and search depth for the game tree:
@@ -77,11 +78,11 @@ Below is the main game loop code, Player O starts and input is read and a move i
 >           run' bs p
 
 > run' :: Board -> Player -> IO ()
-> run' bs p | hasWon (next p) bs = printWinner (next p)
+> run' bs p | hasWon (alt p) bs = printWinner (alt p)
 >           | isDraw bs = putStrLn "Draw!"
 >           | otherwise =
 >                do c <- getCol bs
->                   run (move p c bs) (next p)
+>                   run (move p c bs) (alt p)
 
 > pvc :: Board -> Player -> IO ()
 > pvc b p = do showBoard b 
@@ -91,9 +92,9 @@ Below is the main game loop code, Player O starts and input is read and a move i
 >              if hasWon p b' then
 >                  printWinner p
 >              else
->                  do let b'' = bestmove b' (next p)
->                     if hasWon (next p) b'' then
->                         printWinner (next p)
+>                  do let b'' = bestmove b' (alt p)
+>                     if hasWon (alt p) b'' then
+>                         printWinner (alt p)
 >                     else
 >                         pvc b'' p
 
@@ -117,12 +118,12 @@ getCol returns an Integer based on the user input
 > printWinner :: Player -> IO ()
 > printWinner p = putStr ("Player " ++ show p ++ " won!\n")
 
-next is passed a player and returns the opposite player
+alt is passed a player and returns the opposite player
 
-> next :: Player -> Player
-> next O = X
-> next X = O
-> next B = B
+> alt :: Player -> Player
+> alt O = X
+> alt X = O
+> alt B = B
 
 -- I don't know if we need the turn function but I'm going to leave it in for now
 
@@ -221,7 +222,7 @@ getAllDiags returns all diagonals on the board as a list of rows with no duplica
 
 > gametree :: Int -> Board -> Player -> Tree Board
 > gametree 0 bs p = Node bs []
-> gametree d bs p = Node bs [gametree (d-1) b (next p) | b <- moves bs p]
+> gametree d bs p = Node bs [gametree (d-1) b (alt p) | b <- moves bs p]
 
 minimax attaches an evaluation to each board in the tree
 based on whether the board at each leaf has been won by X or O or if it is a draw/incomplete game
@@ -232,7 +233,7 @@ the evaluations then propagate their way up the tree to the current board
 > minimax p (Node b st) | thiseval == B = Node (b, pref evals) st'
 >                       | otherwise = Node (b, thiseval) []                        
 >                         where
->                             st'   = map (minimax (next p)) st
+>                             st'   = map (minimax (alt p)) st
 >                             evals = [e | Node (_,e) _ <- st']
 >                             pref  = if p==X then maximum else minimum
 >                             thiseval = evalboard b

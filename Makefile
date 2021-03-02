@@ -1,5 +1,5 @@
 all:
-	ghc -O2 connect4.lhs
+	ghc --make -O2 -dynamic connect4.lhs
 
 clean:
 	rm -f *.o *.hi connect4
