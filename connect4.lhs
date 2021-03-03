@@ -262,11 +262,14 @@ the evaluations then propagate their way up the tree to the current board
 
 > minimax :: Player -> Tree (Board,Int) -> Tree (Board,Int,Player)
 > minimax p (Node (b,d) []) = Node (b,d,evalboard b) []
-> minimax p (Node (b,d) st) = Node (b,d,pref evals) st'
+> minimax p (Node (b,d) st) = Node (b,depthf depths,besteval) st'
 >                         where
 >                             st'   = map (minimax (alt p)) st
 >                             evals = [e | Node (_,_,e) _ <- st']
+>                             depths = [d' | Node (_,d',e') _ <- st', e'==besteval]
 >                             pref  = if p==X then maximum else minimum
+>                             besteval = pref evals
+>                             depthf = if besteval==p then minimum else maximum
 
 evalboard returns the status of a board:
 - X has won = X
@@ -286,8 +289,8 @@ in a given position based on a gametree with evaluations
 > bestmove b p = head ms -- ms !! (randomNum (length ms))
 >                where
 >                   t  = gametree depth b p
->                   Node (_,_,eval) st = minimax p t
->                   ms = [b' | Node (b',_,p') _ <- st, p' == eval]
+>                   Node (_,d,eval) st = minimax p t
+>                   ms = [b' | Node (b',d',p') _ <- st, p' == eval, d'==d]
 
 randomNum generetes a random integer between 0 and n
 
