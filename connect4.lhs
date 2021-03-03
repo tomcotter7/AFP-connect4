@@ -94,7 +94,8 @@ Below is the main game loop code, Player O starts and input is read and a move i
 >              else
 >                  do let b'' = bestmove b' (alt p)
 >                     if hasWon (alt p) b'' then
->                         printWinner (alt p)
+>                         do showBoard b''
+>                            printWinner (alt p)
 >                     else
 >                         pvc b'' p
 
