@@ -253,9 +253,16 @@ bestmove returns the optimal move a player can make
 in a given position based on a gametree with evaluations
 
 > bestmove :: Board -> Player -> Board
-> bestmove b p = head [b' | Node (b',p') _ <- st, p' == eval]
+> bestmove b p = ms !! (randomNum (length ms))
 >                where
 >                   t  = gametree depth b p
 >                   Node (_,eval) st = minimax p t
+>                   ms = [b' | Node (b',p') _ <- st, p' == eval]
+
+
+randomNum generetes a random integer between 0 and n
+
+> randomNum :: Int -> Int
+> randomNum n = unsafePerformIO (randomRIO (0,n-1))
 
 ----------------------------------------------------------------------
