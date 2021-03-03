@@ -254,7 +254,7 @@ bestmove returns the optimal move a player can make
 in a given position based on a gametree with evaluations
 
 > bestmove :: Board -> Player -> Board
-> bestmove b p = ms !! (randomNum (length ms))
+> bestmove b p = head ms -- ms !! (randomNum (length ms))
 >                where
 >                   t  = gametree depth b p
 >                   Node (_,eval) st = minimax p t
