@@ -241,10 +241,10 @@ getAllDiags returns all diagonals on the board as a list of rows with no duplica
 > moves :: Board -> Player -> [Board]
 > moves bs p = [ move p c bs | c <- [1..cols], valid c bs]
 
-> gametree :: Int -> Board -> Player -> Tree Board
-> gametree 0 bs p = Node bs []
-> gametree d bs p | evalboard bs == B = Node bs [gametree (d-1) b (alt p) | b <- moves bs p]
->                 | otherwise = Node bs []
+> gametree :: Int -> Board -> Player -> Tree (Board,Int)
+> gametree 0 bs p = Node (bs,depth) []
+> gametree d bs p | evalboard bs == B = Node (bs,depth-d) [gametree (d-1) b (alt p) | b <- moves bs p]
+>                 | otherwise = Node (bs,depth-d) []
 
 minimax attaches an evaluation to each board in the tree
 based on whether the board at each leaf has been won by X or O or if it is a draw/incomplete game
@@ -260,12 +260,12 @@ the evaluations then propagate their way up the tree to the current board
                              pref  = if p==X then maximum else minimum
                              thiseval = evalboard b
 
-> minimax :: Player -> Tree Board -> Tree (Board,Player)
-> minimax p (Node b []) = Node (b,evalboard b) []
-> minimax p (Node b st) = Node (b, pref evals) st'
+> minimax :: Player -> Tree (Board,Int) -> Tree (Board,Int,Player)
+> minimax p (Node (b,d) []) = Node (b,d,evalboard b) []
+> minimax p (Node (b,d) st) = Node (b,d,pref evals) st'
 >                         where
 >                             st'   = map (minimax (alt p)) st
->                             evals = [e | Node (_,e) _ <- st']
+>                             evals = [e | Node (_,_,e) _ <- st']
 >                             pref  = if p==X then maximum else minimum
 
 evalboard returns the status of a board:
@@ -286,9 +286,8 @@ in a given position based on a gametree with evaluations
 > bestmove b p = head ms -- ms !! (randomNum (length ms))
 >                where
 >                   t  = gametree depth b p
->                   Node (_,eval) st = minimax p t
->                   ms = [b' | Node (b',p') _ <- st, p' == eval]
-
+>                   Node (_,_,eval) st = minimax p t
+>                   ms = [b' | Node (b',_,p') _ <- st, p' == eval]
 
 randomNum generetes a random integer between 0 and n
 
