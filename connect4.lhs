@@ -34,6 +34,26 @@ board, length of a winning sequence, and search depth for the game tree:
 > full :: Board
 > full = replicate rows (replicate cols X)
 
+O can win in one move but the program allows the user to win anyway
+X plays the right move to block O with depth <6
+for depth >6 it just lets O win for some reason
+
+> problemboard :: Board
+> problemboard = [[X,B,B,B,B,B,B],
+>                 [X,B,B,B,B,B,B],
+>                 [O,B,B,B,X,B,B],
+>                 [X,X,B,B,O,B,B],
+>                 [X,O,X,O,O,O,B], -- last column on this row, O can win
+>                 [X,O,X,O,O,O,X]]
+
+> problemboard' :: Board
+> problemboard' = [[X,B,B,B,B,B,B],
+>                 [X,B,B,B,B,B,B],
+>                 [O,B,B,B,X,B,B],
+>                 [X,X,B,B,O,B,B],
+>                 [X,O,X,O,O,O,O], -- the winning move that the computer doesnt see the user can play
+>                 [X,O,X,O,O,O,X]]
+
 The board itself is represented as a list of rows, where each row is
 a list of player values, subject to the above row and column sizes:
 
@@ -223,21 +243,30 @@ getAllDiags returns all diagonals on the board as a list of rows with no duplica
 
 > gametree :: Int -> Board -> Player -> Tree Board
 > gametree 0 bs p = Node bs []
-> gametree d bs p = Node bs [gametree (d-1) b (alt p) | b <- moves bs p]
+> gametree d bs p | evalboard bs == B = Node bs [gametree (d-1) b (alt p) | b <- moves bs p]
+>                 | otherwise = Node bs []
 
 minimax attaches an evaluation to each board in the tree
 based on whether the board at each leaf has been won by X or O or if it is a draw/incomplete game
 the evaluations then propagate their way up the tree to the current board
 
+ minimax :: Player -> Tree Board -> Tree (Board,Player)
+ minimax p (Node b []) = Node (b,evalboard b) []
+ minimax p (Node b st) | thiseval == B = Node (b, pref evals) st'
+                       | otherwise = Node (b, thiseval) []                        
+                         where
+                             st'   = map (minimax (alt p)) st
+                             evals = [e | Node (_,e) _ <- st']
+                             pref  = if p==X then maximum else minimum
+                             thiseval = evalboard b
+
 > minimax :: Player -> Tree Board -> Tree (Board,Player)
 > minimax p (Node b []) = Node (b,evalboard b) []
-> minimax p (Node b st) | thiseval == B = Node (b, pref evals) st'
->                       | otherwise = Node (b, thiseval) []                        
+> minimax p (Node b st) = Node (b, pref evals) st'
 >                         where
 >                             st'   = map (minimax (alt p)) st
 >                             evals = [e | Node (_,e) _ <- st']
 >                             pref  = if p==X then maximum else minimum
->                             thiseval = evalboard b
 
 evalboard returns the status of a board:
 - X has won = X
