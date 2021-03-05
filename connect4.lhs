@@ -28,31 +28,16 @@ board, length of a winning sequence, and search depth for the game tree:
 > first :: Player
 > first = O
 
+blank returns a board of rows height and cols width filled entirely with player type B
+this is used to initialise the board at the start of a game
+
 > blank :: Board
 > blank = replicate rows (replicate cols B)
 
+full fills the entire board with player type X and was used for debugging
+
 > full :: Board
 > full = replicate rows (replicate cols X)
-
-O can win in one move but the program allows the user to win anyway
-X plays the right move to block O with depth <6
-for depth >6 it just lets O win for some reason
-
-> problemboard :: Board
-> problemboard = [[X,B,B,B,B,B,B],
->                 [X,B,B,B,B,B,B],
->                 [O,B,B,B,X,B,B],
->                 [X,X,B,B,O,B,B],
->                 [X,O,X,O,O,O,B], -- last column on this row, O can win
->                 [X,O,X,O,O,O,X]]
-
-> problemboard' :: Board
-> problemboard' = [[X,B,B,B,B,B,B],
->                 [X,B,B,B,B,B,B],
->                 [O,B,B,B,X,B,B],
->                 [X,X,B,B,O,B,B],
->                 [X,O,X,O,O,O,O], -- the winning move that the computer doesnt see the user can play
->                 [X,O,X,O,O,O,X]]
 
 The board itself is represented as a list of rows, where each row is
 a list of player values, subject to the above row and column sizes:
@@ -92,6 +77,8 @@ Below is the main game loop code, Player O starts and input is read and a move i
 >           pvc blank first
 
 
+the pvp functions run a game which can be played by two humans against each other
+
 > pvp :: Board -> Player -> IO ()
 > pvp bs p = do
 >           showBoard bs
@@ -103,6 +90,8 @@ Below is the main game loop code, Player O starts and input is read and a move i
 >           | otherwise =
 >                do c <- getCol bs
 >                   pvp (move p c bs) (alt p)
+
+the pvc function runs a game where a human player can play against the computer player
 
 > pvc :: Board -> Player -> IO ()
 > pvc b p = do showBoard b 
@@ -136,15 +125,24 @@ getCol returns an Integer based on the user input
 >               do putStrLn "Invalid"
 >                  getCol bs
 
+printFinished is called when the game ends and it detects whether the game was won by either
+player or whether it was a draw
+
 > printFinished :: Player -> Board -> IO ()
 > printFinished p b | hasWon p b = printWinner p
 >                   | otherwise = printDraw
 
+printWinner formats a string based on a given player to produce a notification saying that that player has won
+
 > printWinner :: Player -> IO ()
 > printWinner p = putStr ("Player " ++ show p ++ " won!\n")
 
+printDraw simply outputs a notification saying that the game was a draw
+
 > printDraw :: IO ()
 > printDraw = putStrLn("Draw!")
+
+gameFinished detects whether the game has ended for a given board
 
 > gameFinished :: Player -> Board -> Bool
 > gameFinished p b = hasWon p b || isDraw b
@@ -155,20 +153,6 @@ alt is passed a player and returns the opposite player
 > alt O = X
 > alt X = O
 > alt B = B
-
--- I don't know if we need the turn function but I'm going to leave it in for now
-
-> turn :: Board -> Player
-> turn xs | o <= x = O
->         | otherwise = X
->           where
->               o = noOf O xs
->               x = noOf X xs 
-
-noOf counts the noOf times a player has played a piece.
-
-> noOf :: Player -> Board -> Int
-> noOf p = length . concat . map (filter (==p))
 
 move returns a new board after the move has been made. Input a player, column and board
 
@@ -248,8 +232,13 @@ getAllDiags returns all diagonals on the board as a list of rows with no duplica
 >                      tr = getColDiags 1 (transpose reverseboard)
 >                      reverseboard = reverse rs
 
+moves returns a list of boards which can be reached by making one valid move
+
 > moves :: Board -> Player -> [Board]
 > moves bs p = [ move p c bs | c <- [1..cols], valid c bs]
+
+gametree builds a tree of boards to a given depth from a given root board
+each node has a board and an integer representing the depth of this node
 
 > gametree :: Int -> Board -> Player -> Tree (Board,Int)
 > gametree 0 bs p = Node (bs,depth) []
@@ -259,16 +248,8 @@ getAllDiags returns all diagonals on the board as a list of rows with no duplica
 minimax attaches an evaluation to each board in the tree
 based on whether the board at each leaf has been won by X or O or if it is a draw/incomplete game
 the evaluations then propagate their way up the tree to the current board
-
- minimax :: Player -> Tree Board -> Tree (Board,Player)
- minimax p (Node b []) = Node (b,evalboard b) []
- minimax p (Node b st) | thiseval == B = Node (b, pref evals) st'
-                       | otherwise = Node (b, thiseval) []                        
-                         where
-                             st'   = map (minimax (alt p)) st
-                             evals = [e | Node (_,e) _ <- st']
-                             pref  = if p==X then maximum else minimum
-                             thiseval = evalboard b
+the depth of the leaf boards will also propagate up the tree so that the ammount of moves required to reach
+that end board can be taken into account (less moves to a win is better, more moves to a loss is better)
 
 > minimax :: Player -> Tree (Board,Int) -> Tree (Board,Int,Player)
 > minimax p (Node (b,d) []) = Node (b,d,evalboard b) []
