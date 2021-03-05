@@ -92,30 +92,30 @@ Below is the main game loop code, Player O starts and input is read and a move i
 >           pvc blank first
 
 
-> run :: Board -> Player -> IO ()
-> run bs p = do
+> pvp :: Board -> Player -> IO ()
+> pvp bs p = do
 >           showBoard bs
->           run' bs p
+>           pvp' bs p
 
-> run' :: Board -> Player -> IO ()
-> run' bs p | hasWon (alt p) bs = printWinner (alt p)
+> pvp' :: Board -> Player -> IO ()
+> pvp' bs p | hasWon (alt p) bs = printWinner (alt p)
 >           | isDraw bs = putStrLn "Draw!"
 >           | otherwise =
 >                do c <- getCol bs
->                   run (move p c bs) (alt p)
+>                   pvp (move p c bs) (alt p)
 
 > pvc :: Board -> Player -> IO ()
 > pvc b p = do showBoard b 
 >              c <- getCol b
 >              let b' = move p c b              
 >              showBoard b'
->              if hasWon p b' then
->                  printWinner p
+>              if gameFinished p b' then
+>                  printFinished p b'
 >              else
 >                  do let b'' = bestmove b' (alt p)
->                     if hasWon (alt p) b'' then
+>                     if gameFinished (alt p) b'' then
 >                         do showBoard b''
->                            printWinner (alt p)
+>                            printFinished (alt p) b''
 >                     else
 >                         pvc b'' p
 
@@ -136,8 +136,18 @@ getCol returns an Integer based on the user input
 >               do putStrLn "Invalid"
 >                  getCol bs
 
+> printFinished :: Player -> Board -> IO ()
+> printFinished p b | hasWon p b = printWinner p
+>                   | otherwise = printDraw
+
 > printWinner :: Player -> IO ()
 > printWinner p = putStr ("Player " ++ show p ++ " won!\n")
+
+> printDraw :: IO ()
+> printDraw = putStrLn("Draw!")
+
+> gameFinished :: Player -> Board -> Bool
+> gameFinished p b = hasWon p b || isDraw b
 
 alt is passed a player and returns the opposite player
 
